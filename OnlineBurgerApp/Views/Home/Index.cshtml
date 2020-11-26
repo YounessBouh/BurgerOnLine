@@ -1,0 +1,135 @@
+﻿@model OnlineBurgerApp.Models.HomeModel.HomeIndexModel
+
+
+@using Microsoft.AspNetCore.Http
+@using OnlineBurgerApp.Extensions
+@using OnlineBurgerApp.Models.HomeModel
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+
+@{
+    ViewData["Title"] = "Home Page";
+    int count = 0;
+    List<ProductModelSession> products = HttpContextAccessor.HttpContext.Session.Get<List<ProductModelSession>>("Cart");
+    if (products == null)
+    {
+        products = new List<ProductModelSession>();
+    }
+    count = products.Count();
+}
+
+
+
+<div class="container" >
+    <div class="row" style="background-color:#ff006e;width:100%;">
+
+        <div class="col-md-10">
+            <img src="~/images/Pictures/BurgerOnline.jpg" width="95%">
+        </div>
+        <div class="col-md-2">
+            <table class="table" style="background-color:#dbb96a;margin-top:5px;">
+                <thead>
+                    <tr>
+                        <th scope="col">
+                            <i style="color:white;font-size:40px;margin-top:10px;" class="glyphicon glyphicon-shopping-cart"></i>
+                        </th>
+                        <th scope="col">
+                            @if (@count != 0)
+                            {
+                                <p style="font-size:20px;color:white;"> @count </p>
+                            }
+                            else
+                            {
+                                <p style="font-size:20px;color:white;"> 0</p>
+                            }
+
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th scope="row">Delivery</th>
+                        <td style="color:blue;font-weight:bold;">1$ x 1 Km</td>
+
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="color:#ff006e;font-weight:bold;">Order more thans 50$ Delivery is free</td>
+
+                    </tr>
+                    <tr>
+
+                        <td colspan="2">
+                            @if (@HttpContextAccessor.HttpContext.Session.GetString("Total") != null)
+                            {
+                                <p style="font-weight:bold;color:white;"> Total Cost :  @HttpContextAccessor.HttpContext.Session.GetString("Total") $</p>
+                            }
+                            else
+                            {
+                                <p style="font-weight:bold;color:white;"> Total Cost :   0  $</p>
+                            }
+
+                            <p style="font-weight:bold">+ Delivery Cost</p>
+                        </td>
+
+                    </tr>
+                    <tr>
+                        @*<td colspan="2"><button class="CheckOut btn-danger btn-lg"> Order Now  </button></td>*@
+                        <td colspan="2">@Html.ActionLink("Order Now ", "CheckOut", "Home", null, new { @class = "btn btn-danger btn-lg" })</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+
+
+
+    <div class="row" style="margin-top:20px;">
+        @foreach (var item in Model.ProductListing)
+        {
+            <div class="col-md-3" id="Img" style="border:2px solid gold">
+              <a href="/Home/ProductDetails/@item.Id"> <img id="pic2" src="~/images/Pictures/@Url.Content(item.Picture)" height="190" width="170" ></a>
+                <div class="caption" style="margin-top:-10px;">
+                    <h5 class="prodname" style="color:#ff006e;margin-left:20px;font-size:15px;font-weight:bold"> @item.Name</h5>
+                    <button type="button" onclick="btnCart(@item.Id)" style="text-align:center;position:relative;width:150px;background-color:#ff6a00;height:30px;">
+                        <i style="font-size:20px;" class="glyphicon glyphicon-shopping-cart"></i>
+                        <span style="font-size:15px;" class="text">Add To Cart </span>
+                    </button>
+                </div>
+            </div>
+        }
+
+    </div>
+</div>
+
+<script>
+
+      function btnCart(ProductId) {                
+          $.ajax({
+          url: '@Url.Action("AddToCart", "Home")',
+          type: 'post',
+          data: { id: ProductId }
+          }).done(function (response) {               
+            if (response) {
+              Swal.fire({
+              position: 'top-end',
+              icon: 'success',
+               title: 'the operation has been saved ',
+               showConfirmButton: false,
+                timer: 900
+                })
+                  setTimeout(function () {
+                    window.location.href = '@Url.Action("Index", "Home")';
+                    }, 700);
+                  }
+           });
+    }
+
+    function DteailsBtn(ProductId) {
+        $.ajax({
+            url: '@Url.Action("ProductDetails","Home")',
+            type: 'post',
+            data: { id:ProductId }
+        });
+    }
+</script>

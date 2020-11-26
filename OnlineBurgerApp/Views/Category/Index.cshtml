@@ -1,0 +1,186 @@
+﻿@model OnlineBurgerApp.Models.CategoryModels.CategoryIndexModel
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+
+
+
+<hr>
+<button id="createBtn" class="btn btn-success" data-target="#showModal" data-toggle="modal">Add New</button>
+<hr>
+<div style="width:60%">
+<table class="table table-condensed table-bordered ">
+    <thead>
+        <tr>
+            <th>Category Name</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.CategoryListingModel)
+        {
+            <tr>
+                <td>@item.Name</td>
+                <td>
+                    <button class="btn btn-primary" onclick="editBtn('@item.CategoryId')">Edit</button>
+                    <button class="btn btn-danger" onclick="deleteBtn('@item.CategoryId')">Delete</button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+    </div>
+
+
+
+<div class="modal fade" role="dialog" id="showModal">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title"><b>Category</b></h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="form-group row">
+                        <div class="col-md-3">
+                            <lable><b>Category Name</b></lable>
+                        </div>
+                        <div class="col-md-6">
+                            <input type="hidden" name="CategoryId" id="CategoryId">
+                            <input type="text" class="form-control" id="CategoryName">
+                        </div>
+
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-success" id="savebtn">Save</button>
+                <button class="btn btn-danger" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    $("#savebtn").click(function () {
+        var catId = $("#CategoryId").val();
+        var catName = $("#CategoryName").val();
+        var frmData = new FormData();
+        frmData.append("CategoryId", catId);
+        frmData.append("Name", catName);
+
+        $.ajax({
+            url: '@Url.Action("Action","Category")',
+            type: 'post',
+            data: frmData,
+            contentType: false,
+            processData: false
+        }).done(function (data) {
+            debugger;
+            if (data == true) {
+
+                Swal.fire({
+                    position: 'top-end',
+                    icon: 'success',
+                    title: 'the operation has been saved ',
+                    showConfirmButton: false,
+                    timer: 1500
+                })
+                 setTimeout(function () {
+                   window.location.href = '@Url.Action("Index", "Category")';
+                },1000);
+
+            }
+            else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'Something went wrong!',
+                    footer: '<a href>Why do I have this issue?</a>'
+                })
+
+                 setTimeout(function () {
+                   window.location.href = '@Url.Action("Index", "Category")';
+                }, 1000);
+            }
+        });
+    });
+
+    function editBtn(CategoryId) {
+
+        $.ajax({
+            url: '@Url.Action("getElementById", "Category")',
+            type: 'get',
+             data: { Id: CategoryId }
+        }).done(function (data) {
+            debugger;
+            $("#CategoryName").val(data.name);
+            $("#CategoryId").val(data.categoryId);
+            $("#showModal").modal({ show: true });
+            });
+    };
+
+
+    const swalWithBootstrapButtons = Swal.mixin({
+        customClass: {
+            confirmButton: 'btn btn-success',
+            cancelButton: 'btn btn-danger'
+        },
+        buttonsStyling: false
+    })
+
+    function deleteBtn(CategoryId) {
+        swalWithBootstrapButtons.fire({
+            title: 'Are you sure?',
+            text: "You won't be able to revert this!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, delete it!',
+            cancelButtonText: 'No, cancel!',
+            reverseButtons: true
+        }).then((result) => {
+            if (result.value) {
+
+                $.ajax({
+                    url: '@Url.Action("Delete", "Category")',
+                    type: 'post',
+                    data: { Id: CategoryId }
+                }).done(function (data) {
+
+                    if (data) {
+                        swalWithBootstrapButtons.fire(
+                            'Deleted!',
+                            'Your data has been deleted.',
+                            'success'
+                        )
+                         setTimeout(function () {
+                            window.location.href = '@Url.Action("Index", "Category")';
+                        }, 700);
+
+                    }
+
+                     else if (
+                       result.dismiss === Swal.DismissReason.cancel
+                    )
+                    {
+                     swalWithBootstrapButtons.fire(
+                    'Cancelled',
+                    'Your imaginary file is safe :)',
+                    'error'
+                )
+            }
+          });
+
+        }
+           
+      })
+    };
+
+</script>

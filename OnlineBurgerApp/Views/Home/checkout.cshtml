@@ -1,0 +1,100 @@
+﻿
+@using OnlineBurgerApp.Extensions
+@using OnlineBurgerApp.Models.HomeModel
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+@{
+    ViewData["Title"] = "checkout";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    List<ProductModelSession> products = HttpContextAccessor.HttpContext.Session.Get<List<ProductModelSession>>("Cart");
+    decimal sum = 0;
+}
+
+@if (products!=null)
+{
+    
+
+<table class="table table-bordered" style="margin-top:50px;">
+    <thead>
+
+        <tr>
+            <th>Product Picture</th>
+            <th>Product Name</th>
+            <th>Product Unit Price</th>
+            <th>Product Quantity</th>
+            <th>Product Total Price</th>
+            <th> Action </th>
+        </tr>
+    </thead>
+    <tbody style="text-align:center;">
+        @foreach (var item in products)
+        {
+            sum = sum + item.Total;
+            <tr>
+                <td><img src="~/images/Pictures/@Url.Content(item.Picture)" height="50" width="50" class="img-rounded"></td>
+                <td>@item.Name</td>
+                <td>@item.Price</td>
+                <td>
+                    @item.Quantity
+                </td>
+                <td>@item.Total</td>
+                <td>
+                    <button onclick="deletBtn(@item.Id)" class="btn btn-danger">Delete</button>
+                </td>
+            </tr>
+        }
+        <tr>
+            <td colspan="4"></td>
+            <td colspan="6">
+
+                @if (sum != 0)
+                {
+                    <h4>Total Amount : @sum $  </h4>
+                }
+                else
+                {
+                    <h4>Total Amount : 0  </h4>
+                }
+            </td>
+        </tr>
+        <tr></tr>
+    </tbody>
+</table>
+<div class="row">
+    <div class="col-md-5">
+        <a class="btn btn-info" href="@Url.Action("Index","Home")">Back To Menu!</a>
+    </div>
+    <div class="col-md-5 text-right">
+        <a class="btn btn-success" href="@Url.Action("Index","Order")">Order Now!</a>
+    </div>
+</div>
+
+}
+else
+{
+<div style="margin-top:50px;">
+    <text style="font-size:25px; color:#0094ff;"> The Model is Empty, Please Select Products</text>
+</div>
+}
+
+<script>
+    function deletBtn(ProductId) {                
+          $.ajax({
+          url: '@Url.Action("delete", "Order")',
+          type: 'post',
+          data: { id: ProductId }
+          }).done(function (response) {               
+            if (response) {
+              Swal.fire({
+              position: 'top-end',
+              icon: 'success',
+               title: 'the operation has been saved ',
+               showConfirmButton: false,
+                timer: 900
+                })
+                  setTimeout(function () {
+                    window.location.href = '@Url.Action("checkout", "Home")';
+                    }, 700);
+                  }
+           });
+    }
+</script>

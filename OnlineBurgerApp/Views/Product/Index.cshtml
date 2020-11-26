@@ -1,0 +1,427 @@
+﻿@model OnlineBurgerApp.Models.ProductModels.ProductIndexModel
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<hr>
+<button id="createBtn" class="btn btn-success" data-target="#ProductModal" data-toggle="modal">Add New</button>
+<hr>
+<div style="width:90%">
+    <table class="table table-condensed table-bordered ">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Price</th>
+                <th>Picture</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.productIndexModels)
+            {
+                <tr>
+                    <td>@item.Name</td>
+                    <td style="width:300px;">@item.Description</td>
+                    <td>@item.Price</td>
+                    <td>
+                        <img src="~/images/Pictures/@item.Picture" height="100" width="100" alt="oops">
+                    </td>
+                    <td >
+                        <button class="btn btn-primary" onclick="editBtn('@item.Id')">Edit</button> ||
+                        <button class="btn btn-danger" onclick="deleteBtn('@item.Id')">Delete</button> ||
+                        <button class="btn btn-info" onclick="btnDetails('@item.Id')">Details</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+
+
+<style>
+    .FilesStyle {
+        height: 100px;
+        width: 100px;
+    }
+</style>
+
+<div class="modal fade" role="dialog" id="ProductModal">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+            </div>
+
+            <div class="modal-body">
+
+                <div class="form-group row">
+                    <div class="col-md-3">
+                        <label>Category Id</label>
+                    </div>
+                    <div class="col-md-5">
+                        <select id="CategoryId" name="CategoryId" class="form-control">
+                            @foreach (var category in Model.CategoryIndexModels)
+                            {
+                                <option value="@category.CategoryId">@category.Name</option>
+                            }
+
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <div class="col-md-3">
+                        <label>Product Name</label>
+                    </div>
+                    <div class="col-md-5">
+                        <input type="hidden" name="Id" id="Id">
+                        <input type="text" class="form-control" id="ProductName" name="ProductName">
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <div class="col-md-3">
+                        <label>Description </label>
+                    </div>
+                    <div class="col-md-5">
+                        <textarea onkeyup="textAreaAdjust(this)" style="overflow:hidden" class="form-control" id="Description" name="Description"></textarea>
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <div class="col-md-3">
+                        <label>Price  </label>
+                    </div>
+                    <div class="col-md-5">
+                        <input type="number" class="form-control" id="Price" name="Price">
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <div class="col-md-6">
+                        <label>Product Picture  </label>
+                        <input type="file" class="form-control" id="Picture" name="Picture" onchange="displayImage(this)">
+                        <img src="" height="250" width="250" id="ProdPic">
+                    </div>
+                    <div class="col-md-6" id="Pics">
+                        <label>Components Pictures  </label>
+                        <input type="file" class="form-control" id="Pictures" name="Pictures" onchange="displayImage2(event)" multiple>
+                        <div id="CompPic">
+
+                        </div>
+                    </div>
+                </div>
+
+
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-success" id="btnSave">Save</button>
+                <button class="btn btn-danger" onclick="btnClose()" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    function displayImage(result) {
+        if (result.files && result.files[0]) {
+            var filereader = new FileReader();
+            filereader.onload = function (e) {
+                $("#ProdPic").attr("src", e.target.result);
+            }
+            filereader.readAsDataURL(result.files[0]);
+        }
+    }
+
+    function displayImage2(event) {
+        var files = event.target.files;
+        for (var i = 0; i < files.length; i++) {
+            $("#CompPic").append("<img src='" + URL.createObjectURL(event.target.files[i]) + "' Class='FilesStyle'   />");
+        }
+    }
+
+    function displayImage3(event) {
+        var files = event.target.files;
+        $("#NewCmp").append("<img src='" + URL.createObjectURL(event.target.files[0]) + "' Class='FilesStyle'   />");
+    }
+
+
+    function displayImage4(event,i) {
+        var files = event.target.files;
+        $("#updateCmp"+i).append("<img src='" + URL.createObjectURL(event.target.files[0]) + "' height='100' width='100'   />");
+    }
+
+    function textAreaAdjust(o) {
+        o.style.height = "1px";
+        o.style.height = (25 + o.scrollHeight) + "px";
+    }
+    
+    $("#btnSave").click(function () {
+        var y = $("#Pictures").get(0).files;
+        var frmData = new FormData();
+        frmData.append("CategoryId", $("#CategoryId").val());
+        frmData.append("Id", $("#Id").val());
+        frmData.append("name", $("#ProductName").val());
+        frmData.append("Description", $("#Description").val());
+        frmData.append("Price", $("#Price").val());
+        frmData.append("Picture", $("#Picture").get(0).files[0]);        
+        for (var i = 0; i < y.length; i++)
+        {
+                frmData.append("Pictures", y[i]);
+        }
+        debugger;
+        $.ajax({
+            url: '@Url.Action("Action","Product")',
+            type: 'post',
+            data: frmData,
+            contentType: false,
+            processData: false
+        }).done(function (data) {
+           
+          if (data == true) {
+
+                Swal.fire({
+                    position: 'top-end',
+                    icon: 'success',
+                    title: 'the operation has been saved ',
+                    showConfirmButton: false,
+                    timer: 1500
+                })
+                 setTimeout(function () {
+                   window.location.href = '@Url.Action("Index", "Product")';
+                },1000);
+
+            }
+            else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'Something went wrong!',
+                    footer: '<a href>Why do I have this issue?</a>'
+                })
+
+                 setTimeout(function () {
+                   window.location.href = '@Url.Action("Index", "Product")';
+                }, 1000);
+            }
+           
+            });
+    });
+
+    function editBtn(ProductId) {
+        $.ajax({
+            url: '@Url.Action("getById", "Product")',
+            type: 'get',
+            data: { Id: ProductId }
+        }).done(function (model) {
+            if (model != null) {
+                $("#CategoryId").val(model.categoryId);
+                $("#Id").val(model.id);
+                $("#ProductName").val(model.name);
+                $("#Description").val(model.description);
+                $("#Price").val(model.price);
+                $("#ProdPic").attr("src", "../images/Pictures/" + model.picture);
+                $("#Pics").hide();
+                $("#ProductModal").modal({ show: true });
+            }
+            else {
+                 Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'Something went wrong!',
+                    footer: '<a href>Why do I have this issue?</a>'
+                })
+
+                 setTimeout(function () {
+                   window.location.href = '@Url.Action("Index", "Product")';
+                }, 1200);
+            }
+        });
+    };
+
+    function btnClose() {
+        $("#Id").val('');
+        $("#ProductName").val('');
+        $("#Description").val('');
+        $("#Price").val('');
+        $("#ProdPic").attr("src", "");
+        $('#ProductModal').modal('hide');
+    }
+
+    const swalWithBootstrapButtons = Swal.mixin({
+        customClass: {
+            confirmButton: 'btn btn-success',
+            cancelButton: 'btn btn-danger'
+        },
+        buttonsStyling: false
+    })
+
+    function deleteBtn(ProductId) {
+        swalWithBootstrapButtons.fire({
+            title: 'Are you sure?',
+            text: "You won't be able to revert this!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, delete it!',
+            cancelButtonText: 'No, cancel!',
+            reverseButtons: true
+        }).then((result) => {
+            if (result.value) {
+
+                $.ajax({
+                    url: '@Url.Action("Delete", "Product")',
+                    type: 'post',
+                    data: { Id: ProductId }
+                }).done(function (data) {
+
+                    if (data) {
+                        swalWithBootstrapButtons.fire(
+                            'Deleted!',
+                            'Your data has been deleted.',
+                            'success'
+                        )
+                         setTimeout(function () {
+                            window.location.href = '@Url.Action("Index", "Product")';
+                        }, 900);
+
+                    }
+
+                     else if (
+                       result.dismiss === Swal.DismissReason.cancel
+                    )
+                    {
+                     swalWithBootstrapButtons.fire(
+                    'Cancelled',
+                    'Your imaginary file is safe :)',
+                    'error'
+                )
+            }
+          });
+
+        }
+           
+      })
+    };
+
+
+    var ProdId;
+    function btnDetails(ProductId) {
+       
+        $.ajax({
+            url: '@Url.Action("Details", "Product")',
+            type: 'get',
+            data: { id: ProductId }
+        }).done(function (response)
+         
+        {
+            var data = $.parseJSON(response);
+            $("#ProductModal .modal-dialog .modal-content .modal-body").html('');
+            var data1 = "";
+            
+            var CreateBtn = "<div class='form-group row'><div class='col-md-6'><input type='file' id='fileCmp' onchange='displayImage3(event)' class='form-control'> </div><div class='col-md-4'><button class='btn btn-success' onclick='AddCmp()'>Add New</button></div> </div><div id='NewCmp'></div>";
+            var dt = CreateBtn + " <br/> <table class='table table-bordered table-responsive'  " + "<thead>"
+                + "<tr class='text-center'><td>Component</td><td>Action</td></tr>"
+                + "</thead>"
+                + "<tbody id='bd'>" + "</tbody>"
+                + "</table>";
+            for (var i = 0; i < data.length; i++) {
+                data1 = data1 + "<tr><td>" + "<img src=../images/Pictures/" + data[i].ComponentUrl + " width='180' height='180'>" + "</td>"
+                    + "<td>" + "<button id='deleteComp' onclick='deleteCmp(" + data[i].ComponentId + ")' class='btn btn-danger'>Delete</button>" + "||" + "<button class='btn btn-primary' onclick='UpdateCmp("+ i+"," + data[i].ComponentId + ")'>Update</button>" + "<br />" + "<br />" + "<input type='file' id='EditComp"+i+"' onchange='displayImage4(event,"+i+")' >"
+                    +"<div id='updateCmp"+i+"'></div>";
+                ProdId = data[i].ProductId;
+            } 
+            
+            $(".modal-body").append(dt);
+            $(".modal-body #bd").append(data1);
+            $("#ProductModal").modal({ show: true });
+            });     
+    }
+
+    function AddCmp() {
+        var frmData = new FormData();      
+        frmData.append("PictureUrl", $("#fileCmp").get(0).files[0]);
+        frmData.append("ProductId", ProdId);
+           $.ajax({
+            url: '@Url.Action("CreateCmp", "Product")',
+               type: 'post',
+               data: frmData,
+               contentType: false,
+               processData: false
+        }).done(function (data) {
+            if (data) {
+                Swal.fire({
+                    position: 'top-end',
+                    icon: 'success',
+                    title: 'the operation has been saved ',
+                    showConfirmButton: false,
+                    timer: 1500
+                })
+                setTimeout(function () {
+                    window.location.href = '@Url.Action("Index", "Product")';
+                }, 800);
+            }          
+            });
+    }
+
+     function deleteCmp(CmpId) {
+        $.ajax({
+            url: '@Url.Action("DeleteCmp","Product")',
+            type: 'post',
+            data: { id: CmpId }
+        }).done(function (data) {
+            if (data) {
+                Swal.fire({
+                    position: 'top-end',
+                    icon: 'success',
+                    title: 'the operation has been saved ',
+                    showConfirmButton: false,
+                    timer: 1500
+                })
+
+                setTimeout(function () {
+                    window.location.href = '@Url.Action("Index", "Product")';
+                }, 800);
+            }          
+            });
+    }
+
+    function UpdateCmp(i,CompId) {
+        var frmData = new FormData();
+        var CmpId = CompId;
+        var CmpFile = $("#EditComp"+i).get(0).files[0];
+        if (CmpFile != null) {
+            frmData.append("CompId", CmpId);
+            frmData.append("PictureUrl", CmpFile);
+            debugger;
+        $.ajax({
+            url: '@Url.Action("UpdateCmp","Product")',
+            type: 'post',
+            data: frmData,
+            contentType: false,
+            processData: false
+        }).done(function (data) {
+             if (data) {
+                 Swal.fire({
+                     position: 'top-end',
+                     icon: 'success',
+                     title: 'the operation has been saved ',
+                     showConfirmButton: false,
+                     timer: 1500
+                 })
+                setTimeout(function () {
+                    window.location.href = '@Url.Action("Index", "Product")';
+                }, 800);
+            }          
+
+            });
+        }
+       
+    }
+
+</script>

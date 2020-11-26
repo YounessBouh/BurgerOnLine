@@ -1,0 +1,70 @@
+﻿@model OnlineBurgerApp.Models.HomeModel.ProductDetailsListingModel
+@{
+    ViewData["Title"] = "ProductDetails";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@*<h2 style="font-weight:bold;margin-top:40px;color:#ff006e;">Price  :  @Model.product.Price $</h2>*@
+
+@using (Html.BeginForm("ProductDetails", "User"))
+{
+    <div class="conatiner" style="margin-top:20px;position:relative;">
+        <div class="row">
+            <div class="col-md-6 ">
+
+                <h1 style="font-weight:bold;color:#0094ff;">@Model.product.Name</h1>
+                <hr>
+                <img src="~/images/Pictures/@Url.Content(Model.product.Picture)" id="image" height="300">
+                <a style="color:white;font-size:15px;" onclick="btnCart(@Model.product.Id)" href="#">
+                    <div style="text-align:center;position:relative;width:200px;background-color:#ff6a00 ;height:40px;margin-top:5px;margin-left:30px;">
+                        <i style="color:white;font-size:25px;margin-top:5px;" class="glyphicon glyphicon-shopping-cart"></i>
+                        Add To Cart
+                    </div>
+                </a>
+                
+                <h2 style="font-weight:bold;margin-top:30px;color:#ff006e;">Price  :  @Model.product.Price $</h2>
+            </div>
+
+            <div class="col-md-6">
+                <div class="thumb" @*style="margin-top:30px;" *@>
+                    <h1 style="font-weight:bold;color:#0094ff;">Components</h1>
+                    <hr>
+                    @foreach (var component in Model.components)
+                    {
+                        <img src="~/images/Pictures/@Url.Content(component.ComponentUrl)" height="120" style="margin-bottom:20px;">
+
+                    }
+                    <div style="background-color:gold;border-radius:6px;">
+                        <h4 style="font-weight:bold;color:#17bf20; text-align:center;padding:12px;">@Model.product.Description</h4>
+                    </div>
+
+                </div>
+
+
+            </div>
+
+        </div>
+    </div>
+
+}
+
+<script>
+     function btnCart(ProductId) {
+
+                     $.ajax({
+                         url: '@Url.Action("AddToCart", "Home")',
+                         type: 'post',
+                         data: { id: ProductId }
+                     }).done(function (response) {
+
+                         if (response.Success) {
+                             swal("Done !", "Product added to cart!", "success");
+                             setTimeout(function () {
+                                 window.location.href = '@Url.Action("ProductDetails", "Home")';
+                             }, 800);
+                         }
+
+                         });
+                   }
+</script>
+

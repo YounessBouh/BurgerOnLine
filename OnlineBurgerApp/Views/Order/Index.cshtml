@@ -1,0 +1,123 @@
+﻿@model OnlineBurgerApp.Models.OrderModels.OrderListingModel
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@using Microsoft.AspNetCore.Http
+@using OnlineBurgerApp.Extensions
+@using OnlineBurgerApp.Models.HomeModel
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+
+@{
+    List<ProductModelSession> products = HttpContextAccessor.HttpContext.Session.Get<List<ProductModelSession>>("Cart");
+}
+
+@if (products != null)
+{
+    <hr style="margin-top:50px;">
+    <h2 style="font-family:Algerian;font-weight:bold;color:gold;">Make an Online Order</h2>
+
+    <span id="FormError" style="margin-left:80px;font-size:20px;text"></span>
+    <form id="Order-form" autocomplete="off">
+        <table>
+
+            <tr>
+                <td id="Fst" style="font-weight:bold;color:#ff006e;"> Name : </td>
+                <td id="inp">
+                    <input type="text" name="CustomerName" id="CustomerName"  class="form-control input-lg" required  />
+
+                </td>
+            </tr>
+
+            <tr>
+                <td id="Fst" style="font-weight:bold;color:#ff006e;"> Email : </td>
+                <td id="inp">
+                    <input type="text" name="CustomerEmail" id="CustomerEmail"  class="form-control input-lg" required />
+                    <span id="emailError"></span>
+                </td>
+            </tr>
+
+            <tr>
+                <td id="Fst" style="font-weight:bold;color:#ff006e;"> Phone : </td>
+                <td id="inp">
+                    <input type="text" name="CustomerPhone" id="CustomerPhone"  class="form-control input-lg" required />
+                    <span id="phoneError"></span>
+                </td>
+            </tr>
+
+            <tr>
+                <td id="Fst" style="font-weight:bold;color:#ff006e;"> Address : </td>
+                <td id="inp">
+                    <input type="text" name="CustomerAddress" id="CustomerAddress"  class="form-control input-lg" required  />
+                    <span id="addressError"></span>
+                </td>
+            </tr>
+
+        </table>
+    </form>
+    <hr>
+    <a href="@Url.Action("Index", "Home")" type="button" class="btn btn-warning">Back To Shopping</a>
+    <button id="Order" class="btn btn-primary" style="margin-left:50px;">Make Your Order</button>
+
+}
+else
+{
+    <h1>the cart is Empty</h1>
+}
+
+
+<script>
+
+
+    $("#Order").click(function () {
+        var name = $("#CustomerName").val();
+        var Email = $("#CustomerEmail").val();
+        var Phone = $("#CustomerPhone").val();
+        var addres = $("#CustomerAddress").val();
+
+        // validation for email and phone structure is not included
+
+        if (name == "" || Email == "" || Phone == "" || addres == "") {
+            $("#FormError").html('all field should be filled');
+            $("#FormError").css('color', 'red');
+            return false;
+        }
+
+
+            $.ajax({
+                url: '@Url.Action("Order", "Order")',
+                type: 'post',
+                data: $('#Order-form').serialize()
+            }).done(function (response) {
+                debugger;
+                if (response) {
+
+                    Swal.fire({
+                        position: 'top-end',
+                        icon: 'success',
+                        title: 'your order has been saved succefully ',
+                        showConfirmButton: false,
+                        timer: 1000
+                    })
+
+                     setTimeout(function () {
+                        window.location.href = '@Url.Action("Index", "Home")';
+                    }, 1000);
+
+
+                }
+                else {
+                    $("#ErrorMsg").html(response.Message);
+                    alert("something wron ,try again!");
+                }
+            });
+    });
+
+
+
+
+
+
+</script>
+
